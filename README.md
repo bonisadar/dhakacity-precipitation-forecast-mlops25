@@ -125,8 +125,89 @@ Provisioned resources in GCP:
 - A **Service Account** with IAM roles and generated credentials.
 
 ---
+$ export GOOGLE_APPLICATION_CREDENTIALS="/mnt/your/path/to the service-account-key-file.json/.gcp/ml-pipeline-orchestration-17.json"
+
+$ terraform init
+$ terraform fmt 
+$ terraform validate 
+$ terraform plan -out=tfplan
+ - Remember the password1 entered during prompt
+$ terraform apply "tfplan"
+
+* db_public_ip is the postgresql instance ip
+* You can either access you VM in GCP via GCP UI (easier) or
+ - $ gcloud compute instances start mlops-vm --zone=asia-south2-a
+ - $ gcloud compute ssh mlops-vm --zone=asia-south2-a
+
+* During first loging into VM
+ - source ~/miniconda3/etc/profile.d/conda.sh
+ - conda activate mlopsenv
+* Make sure necessary libraries are installed correctly.
+ - pip freeze | grep -E 'numpy|pandas|scikit-learn|xgboost|fastapi|uvicorn|google-cloud-storage|psycopg|pyarrow|fastparquet|mlflow|prefect|requests'
 
 ## 🔁 Workflow Summary
+
+- Open a terminal from your local machine where you stored the key.json file and use this to upload the key file to the VM
+  gcloud compute scp \
+    your-service-key.json \
+    mlops-vm:~/projects/dhakacity-precipitation-forecast-mlops/.gcp \
+    --zone=asia-south2-a
+* From inside your VM
+- Move to project directory cd projects/dhakacity-precipitation-forecast-mlops25
+- $ export GOOGLE_APPLICATION_CREDENTIALS="/home/bonisadar/projects/dhakacity-precipitation-forecast-mlops25/.gcp/ml-pipeline-orchestration-17.json"
+
+# Initializing pushgateway, prometheus and grafana
+* Add Your User to the docker Group
+- sudo usermod -aG docker $USER
+  Then log out and log back in
+- Initialize docker by following setup_monitoring.sh instructions
+
+# Starting Prefect
+** After activating the virtual env 
+ - $ tmux
+
+* Set the database connection URL
+  - $ export PREFECT_API_DATABASE_CONNECTION_URL=postgresql+asyncpg://postgres:password1@your-postgresql-ip:5432/prefectdb
+* Set the Prefect API URL 
+  - export PREFECT_API_URL="http://your-vm-static-ip/api"
+* Manually create the folders once, give yourself write access.
+  - $ sudo mkdir -p /home/bonisadar/miniconda3/envs/mlopsenv/lib/python3.10/site-packages/prefect/server/ui_build
+  - $ sudo chown -R bonisadar:bonisadar /home/bonisadar/miniconda3/envs/mlopsenv/lib/python3.10/site-packages/prefect/server/ui_build
+  - $ prefect server start --host 0.0.0.0 --port 4200
+  - $ Ctrl+B, C (Opens a new terminal)
+  - $ export PREFECT_API_URL=http://your-vm-static-ip:4200/api (Then you can access http://34.131.121.93:4200 from your local computer)
+
+* You need to log into SendGrid and get a access key and also verify a sender email and register a receiver email for the email notification to work (The code will just run fine without it). Open prefect UI create a SendGrid notification block using the key from sendgrid. Also, create a worker type process name first_worker.
+
+DO NOT forget to change the  bucket-name and sendgrid-block-name in config.py inside utils.
+
+# Starting mlflow server
+ - mlflow server \
+  --backend-store-uri postgresql+psycopg2://postgres:password1@your-postgresql-ip:5432/mlflowdb \
+  --default-artifact-root gs://mlops-zoomcamp-bucket-51/mlflow-artifacts \
+  --host 0.0.0.0 \
+  --port 5000
+
+ - Ctrl+B , C
+ - $ export MLFLOW_TRACKING_URI=http://34.131.121.93:5000 
+
+ ----------------------------------------------------------------------------------------------
+  Ctrl + B, W → shows all windows in the current session (select with arrow keys and Enter).
+    Ctrl + B, N → go to Next window.
+    Ctrl + B, P → go to Previous window.
+
+  To detach
+    Ctrl + B, D
+
+  To list all tmux sessions:
+   tmux ls
+  
+  Attach to session 0:
+    tmux attach -t 0
+
+  Kill All Sessions
+   tmux kill-server
+ ----------------------------------------------------------------------------------------------
 
 ### `fetch_and_upload_flow`
 
@@ -135,6 +216,12 @@ Provisioned resources in GCP:
 | ⬇️ Fetch | Pull historical hourly weather data from Open-Meteo |
 | 📁 Save | Save CSV locally, then upload to **GCS** |
 | ✅ Notify | Send a completion email via **SendGrid** |
+
+$ prefect deploy fetch_and_upload_data.py:fetch_and_upload_flow -n open-meteo-data-fetcher -p "first_worker"
+$ export GOOGLE_APPLICATION_CREDENTIALS="/home/bonisadar/dhakacity-precipitation-forecast-mlops25/.gcp/ml-pipeline-orchestration-17.json"
+$ prefect deployment run 'fetch-and-upload-flow/open-meteo-data-fetcher'
+
+* Check you spam folder for the email notification.
 
 ### `model_train_flow`
 
@@ -145,6 +232,11 @@ Provisioned resources in GCP:
 | 📦 Log | Store metrics, artifacts, params in **MLflow** |
 | ✅ Notify | Send model training summary via **SendGrid** |
 
+$ prefect deploy train_and_compare.py:train_and_compare -n dhaka-precipitation-forecast-test -p "first_worker"
+$ prefect deployment run 'train_and_compare/dhaka-precipitation-forecast-test'
+
+When you open grafana for the first time after running the deployments. Add datasource prometheus and select the time last 1 hour by editing the windows in the dashboards.
+
 ### `daily_forecast_drift_check_flow`
 
 | Task | Description |
@@ -153,6 +245,12 @@ Provisioned resources in GCP:
 | 📈 Compare | Compare against past model metrics |
 | ⚠️ Notify | Send drift alert if deviation exceeds threshold |
 
+$ prefect deploy monitor_drift.py:drift_monitoring_flow -n drift-monitoring-deployment-test -p "first_worker"
+$ prefect deployment run 'drift_monitoring_flow/drift-monitoring-deployment-test'
+
+When exiting
+tmux kill-server
+docker compose stop/start
 ---
 
 ## 📬 Notification
@@ -173,9 +271,5 @@ Provisioned resources in GCP:
 | `daily_forecast_drift_check_flow` | **Every day at 10 AM** |
 
 ---
-
-
-
-### 1. Create and Configure GCP Project
 
 When you open grafana for the first time after running the deployments. Add datasource prometheus and select the time last 1 hour by editing the windows in the dashboards.

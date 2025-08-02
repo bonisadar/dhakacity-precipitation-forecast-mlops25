@@ -1,7 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from prefect import flow, task, get_run_logger
-from utils.config import get_bucket_name
+from utils.config import get_bucket_name, get_sendgrid_block
 from data_fetcher import fetch_weather_data, get_dynamic_date_range
 from google.cloud import storage
 from prefect.blocks.notifications import SendgridEmail
@@ -58,7 +58,7 @@ def fetch_and_upload_flow():
     missing_count = df.isnull().sum().sum()
     has_missing = missing_count > 0
 
-    sendgrid_block = SendgridEmail.load("send-grid-notification-test")
+    sendgrid_block = SendgridEmail.load(get_sendgrid_block())
 
 
     subject = "☁️ Training data collection via Open-meteo API"

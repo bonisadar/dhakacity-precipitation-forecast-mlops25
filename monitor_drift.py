@@ -11,6 +11,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from prefect import flow, task, get_run_logger
 from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
 from prefect.blocks.notifications import SendgridEmail
+from utils.config import get_sendgrid_block
 
 
 # === Setup ===
@@ -193,7 +194,7 @@ def drift_monitoring_flow():
     logger.info(f"Drift detected: {drift_detected}")
 
     # SendGrid alert
-    sendgrid_block = SendgridEmail.load("send-grid-notification-test")
+    sendgrid_block = SendgridEmail.load(get_sendgrid_block())
 
     if drift_detected:
         message = (
