@@ -76,14 +76,14 @@ on linux_amd64
   - $ gcloud auth login
 
 - Create a project. 
-  - $ gcloud projects create dhakacity-forecast-mlops25 --name="DhakaCity Precipitation Forecast" --set-as-default
+  - $ gcloud projects create dhakacity-forecast-mlops25 --name="Precipitation Forecast" --set-as-default
 
 - Get the id of your billing account.
   - $ gcloud billing accounts list
 
 - Link billing
-  - gcloud beta billing projects link dhakacity-forecast-0725 \
-       --billing-account=<your-billing-id>
+  - gcloud beta billing projects link dhakacity-forecast-mlops25 \
+       --billing-account=your-billing-id
 
 - Enable APIs:
   - gcloud services enable compute.googleapis.com \
@@ -93,18 +93,18 @@ on linux_amd64
 
 - Grant Roles to the Service Account
   - $ gcloud config list account
-  - $ gcloud projects add-iam-policy-binding dhakacity-forecast-0725 \
-         --member="serviceAccount:<Your-service-account>" \
+  - $ gcloud projects add-iam-policy-binding dhakacity-forecast-mlops25 \
+         --member="serviceAccount:Your-service-account" \
          --role="roles/owner"
 
 - your donwloaded key file for the service account
-  - $ gcloud auth activate-service-account --key-file=.gcp/<Your-key-file.json>
+  - $ gcloud auth activate-service-account --key-file=.gcp/Your-key-file.json
 
 - Verify it's active
   - $ gcloud config list account
 
 - Enabling Cloud Resource Manager API 
-  - $ gcloud config set project dhakacity-forecast-0725
+  - $ gcloud config set project dhakacity-forecast-mlops25
 
 Open the API activation link in your browser: Click enable wait for a few minutes
 
