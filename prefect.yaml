@@ -1,0 +1,66 @@
+# Welcome to your prefect.yaml file! You can use this file for storing and managing
+# configuration for deploying your flows. We recommend committing this file to source
+# control along with your flow code.
+
+# Generic metadata about this project
+name: test_code
+prefect-version: 3.4.6
+
+# build section allows you to manage and build docker images
+build: null
+
+# push section allows you to manage if and how this project is uploaded to remote locations
+push: null
+
+# pull section allows you to provide instructions for cloning this project in remote locations
+pull:
+- prefect.deployments.steps.set_working_directory:
+    directory: /mnt/MY DATA/Github repository/DataTalks/test_code
+
+# the deployments section allows you to provide configuration for deploying flows
+deployments:
+- name: open-meteo-data-fetcher
+  version: test-2
+  tags: [training-data-collection]
+  description: null
+  schedule: 
+    cron: "0 22 1 * *"       # Every 1st day of the month at 22:00 (10 PM)
+    timezone: "Asia/Dhaka"   # Your local timezone
+
+  flow_name: fetch_and_upload_flow()
+  entrypoint: fetch_and_uploag_data.py:fetch_and_upload_flow
+  parameters: {}
+  work_pool:
+    name: first_worker
+    work_queue_name: default
+    job_variables: {}
+
+
+- name: dhaka-precipitation-forecast-test
+  version: test-2
+  tags: []
+  description: null
+  schedule: 
+    cron: "0 22 2 * *"       # Every 1st day of the month at 22:00 (10 PM)
+    timezone: "Asia/Dhaka"   # Your local timezone
+  flow_name: train_and_compare
+  entrypoint: train_and_compare.py:train_and_compare
+  parameters: {}
+  work_pool:
+    name: first_worker
+    work_queue_name: defaultn
+    
+    job_variables: {}
+
+- name: drift-monitoring-deployment-test
+  version: v2
+  tags: ["monitoring"]
+  schedule:
+    cron: "0 17 * * *"         # 11 PM Dhaka is 5 PM UTC
+    timezone: "Asia/Dhaka"     
+  flow_name: drift_monitoring_flow
+  entrypoint: monitor_drift.py:drift_monitoring_flow
+  work_pool:
+    name: first_worker
+    work_queue_name: default
+    job_variables: {}
