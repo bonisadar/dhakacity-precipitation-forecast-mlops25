@@ -279,7 +279,7 @@ http://34.131.121.93:9091 access prometheus from local machine
 
 http://34.131.121.93:3000 access grafana from local machine
 
-## Screenshot
+## Model Training flow
 
 ![Model train flow](assets/train.png)
 
