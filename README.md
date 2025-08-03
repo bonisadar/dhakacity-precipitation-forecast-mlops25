@@ -14,6 +14,7 @@ Rainfall in Bangladesh can cause severe urban disruption. The goal is to:
 - Detect drift daily to monitor model health.
 - Send **email notifications** (via SendGrid) for model status and alerts.
 - Momitor model metrics in Grafana.
+- Model deployed using GCP Cloud Run/Services
 
 ---
 
@@ -29,6 +30,7 @@ Rainfall in Bangladesh can cause severe urban disruption. The goal is to:
 | Infra-as-Code             | **Terraform**                   |
 | Monitoring & Notification | **Grafana, SendGrid**           |
 | Scheduling                | **Prefect Scheduled Flows**     |
+| Cloud Deployment          | **GCP Cloud Run/services**      |
 
 ---
 ## Setup Instructions
@@ -277,6 +279,11 @@ http://34.131.121.93:9091 access prometheus from local machine
 
 http://34.131.121.93:3000 access grafana from local machine
 
+## Screenshot
+
+![Model train flow](assets/train.png)
+
+
 When you open grafana for the first time after running the deployments. Go to the dashboard named ML Model metrics, select the time last 1 hour by editing the windows in the dashboards.
 
 ### `drift_monitoring_flow`
@@ -289,6 +296,20 @@ When you open grafana for the first time after running the deployments. Go to th
 
 * $ prefect deploy monitor_drift.py:drift_monitoring_flow -n drift-monitoring-deployment-test -p "first_worker"
 * $ prefect deployment run 'drift_monitoring_flow/drift-monitoring-deployment-test'
+
+## Drift monitor flow
+
+![Monitor drift flow](assets/monitor.png)
+
+## Mlflow UI
+
+![Mlfolw UI](assets/mlflow.png)
+
+## Pushgateway Model Metrics
+
+![Model metrics](assets/pushgateway.png)
+
+
 
 When exiting
 
@@ -317,3 +338,33 @@ $ docker compose stop/start
 | `drift-monitoring-flow` | **Every day at 11 AM UTC** |
 ---
 
+## Deployment
+
+**The model is deployed using GCP Cloud Run/Services**
+
+## Step 1 select GitHub
+
+![Select gitHub](assets/deploy1.png)
+
+## Step 2 setup cloud build
+#### Manage connect repo - add the repo you want to deploy from
+
+![Setup cloud build](assets/deploy2.png)
+
+## Step 3 
+#### Don't forget to select the correct branch name (master in this case)
+
+![brach name](assets/deploy4.png)
+
+## Running Build
+
+![running build](assets/deploy8.png)
+
+#### After successful bulid - Go to Cloud Run Console - Click your service: dhakacity-precipitation-forecast-mlops25 - Right at the top - you'll see the API endpoint.
+
+## Welcome screen
+
+![welcome screen](assets/welcome.png)
+
+## Just add '/predict' at the end of the URL
+![Predictions](assets/predictions.png)
