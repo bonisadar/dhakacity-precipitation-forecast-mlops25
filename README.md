@@ -19,6 +19,12 @@ Rainfall in Bangladesh can cause severe urban disruption. The goal is to:
 ---
 
 ## Tech Stack
+#### OS: Ubuntu 24.04.2 LTS x86_64 (Local Machine)
+#### The VM in GCP 
+
+**Boot disk source image: ubuntu-minimal-2404-noble-amd64-v20250701**
+
+**Boot disk architecture: X86_64**
 
 | Layer                     | Tool / Framework                |
 |---------------------------|---------------------------------|
