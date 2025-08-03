@@ -159,7 +159,7 @@ $ export GOOGLE_APPLICATION_CREDENTIALS="/mnt/your/path/to the service-account-k
 - Move to project directory cd projects/dhakacity-precipitation-forecast-mlops25
 - $ export GOOGLE_APPLICATION_CREDENTIALS="/home/bonisadar/projects/dhakacity-precipitation-forecast-mlops25/.gcp/your-service-key.json"
 
-### Initializing pushgateway, prometheus and grafana
+### Initializing pushgateway, prometheus and Grafana
 #### Add Your User to the docker Group
 - sudo usermod -aG docker $USER
 
