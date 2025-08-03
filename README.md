@@ -26,6 +26,8 @@ Rainfall in Bangladesh can cause severe urban disruption. The goal is to:
 
 **Boot disk architecture: X86_64**
 
+**Machine type: e2-standard-2 (2 vCPUs, 8 GB Memory)**
+
 | Layer                     | Tool / Framework                |
 |---------------------------|---------------------------------|
 | Cloud Infrastructure      | **Google Cloud Platform (GCP)** |
