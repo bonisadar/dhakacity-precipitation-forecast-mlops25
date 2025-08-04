@@ -14,8 +14,8 @@ resource "google_storage_bucket" "mlflow_bucket" {
 }
 
 # VM static ip
-resource "google_compute_address" "mlops_vm_static_ip" {
-  name   = "mlops-vm-static-ip"
+resource "google_compute_address" "mlops_vm_sta_ip" {
+  name   = "mlops-vm-sta-ip"
   region = var.region
 }
 
@@ -36,7 +36,7 @@ resource "google_sql_database_instance" "mlflow_db_instance" {
       ipv4_enabled = true
       authorized_networks {
         name  = "mlops-vm"
-        value = google_compute_address.mlops_vm_static_ip.address
+        value = google_compute_address.mlops_vm_sta_ip.address
       }
     }
 
@@ -94,7 +94,7 @@ resource "google_compute_instance" "mlops_vm" {
     network = "default"
 
     access_config {
-      nat_ip = google_compute_address.mlops_vm_static_ip.address
+      nat_ip = google_compute_address.mlops_vm_sta_ip.address
     }
   }
 

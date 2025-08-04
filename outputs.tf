@@ -13,8 +13,8 @@ output "db_public_ip" {
   description = "Public IP of the PostgreSQL DB"
 }
 
-output "mlops_vm_static_ip" {
-  value = google_compute_address.mlops_vm_static_ip.address
+output "mlops_vm_sta_ip" {
+  value = google_compute_address.mlops_vm_sta_ip.address
 }
 
 output "prefect_database_name" {

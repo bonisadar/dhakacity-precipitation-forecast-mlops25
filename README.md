@@ -44,77 +44,14 @@ Rainfall in Bangladesh can cause severe urban disruption. The goal is to:
 ## Setup Instructions
 > Assumes `gcloud`, `terraform` already installed in local environment. If not:
 
-1. Install Google Cloud SDK (gcloud CLI). Google Cloud SDK includes gcloud, gsutil, and bq.
-2. Update and install dependencies
-   - $ sudo apt update && sudo apt install apt-transport-https ca-certificates gnupg curl -y
-
-3. Add the Google Cloud SDK repo and GPG key
-    - $ echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" \
-        | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-
-      $ curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
-        | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-
-4. Update again and install
-sudo apt update && sudo apt install google-cloud-sdk -y
-
-5. Verify
-gcloud version
-
-6. Install Terraform
-   * Follow instructions: https://developer.hashicorp.com/terraform/install
-   * Or, for Linus Ubuntu/Debian
-   * $ wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-   * $ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-   * $ sudo apt update && sudo apt install terraform
-
-7. Verify Installation
-   * $ terraform -version
-
-   **Terraform v1.12.2 on linux_amd64**
-
+- $ make setup_cloud_dev 
 
 ## Manually create (From your local machine)
 - A GCP service account with billing enabled.
+- A Project ID linked to the billing.
+- Granting necessary permissions
 
-- Authenticating with the gcolud CLI
-  - $ gcloud auth login
-
-- Create a project. 
-  - $ gcloud projects create dhakacity-forecast-mlops25 --name="Precipitation Forecast" --set-as-default
-
-- Get the id of your billing account.
-  - $ gcloud billing accounts list
-
-- Link billing
-  - gcloud beta billing projects link dhakacity-forecast-mlops25 \
-       --billing-account=your-billing-id
-
-- Enable APIs:
-  - gcloud services enable compute.googleapis.com \
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iam.googleapis.com \
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;storage.googleapis.com \
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cloudresourcemanager.googleapis.com
-
-- Grant Roles to the Service Account
-  - $ gcloud config list account
-  - $ gcloud projects add-iam-policy-binding dhakacity-forecast-mlops25 \
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--member="serviceAccount:Your-service-account" \
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--role="roles/owner"
-
-- Your donwloaded key file for the service account
-  - $ gcloud auth activate-service-account --key-file=.gcp/Your-key-file.json
-
-- Verify it's active
-  - $ gcloud config list account
-
-- Enabling Cloud Resource Manager API 
-  - $ gcloud config set project dhakacity-forecast-mlops25
-
-Open the API activation link in your browser: Click enable wait for a few minutes
-
-- Quick sanity check:
-  - $ gcloud projects list
+If need help. Click here [here](assets/gcp-setup-instructions.md). Follow them step-by-step before running the pipeline!
 
 ## Infrastructure Setup (via Terraform)
 
@@ -133,19 +70,17 @@ Open the API activation link in your browser: Click enable wait for a few minute
 #### From your local machine
 - $ git clone https://github.com/bonisadar/dhakacity-precipitation-forecast-mlops25
 
-- $ export GOOGLE_APPLICATION_CREDENTIALS="/mnt/your/path/to the service-account-key-file.json/.gcp/ml-pipeline-orchestration-17.json"
+- $ export GOOGLE_APPLICATION_CREDENTIALS="/mnt/your/path/to the service-account-key-file/.gcp/name-of-keyfile.json"
 
-### DO NOT forget to change the bucket-name inside the terraform.tfvars
+### DO NOT forget to change the bucket-name and preject ID inside the terraform.tfvars
 
-* $ terraform init
-* $ terraform fmt 
-* $ terraform validate 
-* $ terraform plan -out=tfplan
+* $ make terraform_all
+
    - **Remember the password1 entered during prompt**
-* $ terraform apply "tfplan"
 
 **If all goes accordingly you should see the outputs, copy the two IP addresses**
 **db_public_ip is the postgresql instance ip, other on is VM static IP**
+**You need to update the Makefile variables accordingly**
 
 ### Accessing your VM in GCP
 * You can access your GCP VM either through the Google Cloud Console using the browser-based SSH (easier) or
@@ -158,17 +93,22 @@ Open the API activation link in your browser: Click enable wait for a few minute
 * Make sure necessary libraries are installed correctly.
   - $ pip freeze | grep -E 'numpy|pandas|scikit-learn|xgboost|fastapi|uvicorn|google-cloud-storage|psycopg|pyarrow|fastparquet|mlflow|prefect|requests'
 
+**If no miniconda3 dir found only projects is there then run:**
+ - $ make setup-vm
+
 ## 🔁 Workflow Summary
 
-- Open a terminal from your local machine where you stored the key.json file and use this to upload the key file to the VM (Or just upload the file via upload button if you are using browser-based SSH to access the VM)
+- Open a terminal from your local machine where you stored the your-service-key.json file and use the command: 
 
-  $ gcloud compute scp \
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; your-service-key.json \
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mlops-vm:~/projects/dhakacity-precipitation-forecast-mlops/.gcp \
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--zone=asia-south2-a
+  - $ gcloud compute scp your-service-key.json bonisadar@mlops-vm:/home/bonisadar/ --zone=asia-south2-a
+
+- to upload the key file to the VM (Or just upload the file via upload button if you are using browser-based SSH to access the VM)
+
+  - $ make move-creds  (Don't forget to update your Makefile variables as necessary)
+ 
 
 ### From inside your VM
-- Move to project directory cd projects/dhakacity-precipitation-forecast-mlops25
+- Move to project directory $ cd projects/dhakacity-precipitation-forecast-mlops25
 - $ export GOOGLE_APPLICATION_CREDENTIALS="/home/bonisadar/projects/dhakacity-precipitation-forecast-mlops25/.gcp/your-service-key.json"
 
 ### Initializing pushgateway, prometheus and Grafana
@@ -176,7 +116,7 @@ Open the API activation link in your browser: Click enable wait for a few minute
 - sudo usermod -aG docker $USER
 
   **Then log out and log back in (Just type $ exit and log in again).**
-- Initialize docker by following setup_monitoring.sh instructions
+- $ make docker-init
 
 ## Starting Prefect
 **After activating the virtual env inside your VM**
@@ -186,6 +126,7 @@ Open the API activation link in your browser: Click enable wait for a few minute
   - $ export PREFECT_API_DATABASE_CONNECTION_URL=postgresql+asyncpg://postgres:password1@your-postgresql-ip:5432/prefectdb
 * Set the Prefect API URL 
   - export PREFECT_API_URL="http://your-vm-static-ip:4200/api"
+  
 #### Manually create the folders once, give yourself write access.
   - $ sudo mkdir -p /home/bonisadar/miniconda3/envs/mlopsenv/lib/python3.10/site-packages/prefect/server/ui_build
 
@@ -378,3 +319,16 @@ $ docker compose stop/start
 
 ## Just add '/predict' at the end of the URL
 ![Predictions](assets/predictions.png)
+
+#### Do not maually delete the resources created by the terraform
+- $ export GOOGLE_APPLICATION_CREDENTIALS="/home/bonisadar/dhakacity-precipitation-forecast-mlops25/.gcp/ml-pipeline-orchestration-17.json"
+- $ terraform destroy
+- $ terraform state list   # <- lists all tracked resources 
+
+    (If something remains)
+
+- $ terraform state rm google_sql_database.mlflow_database
+- $ terraform state rm google_sql_user.mlflow_user
+- $ terraform state rm google_sql_database_instance.mlflow_db_instance
+- $ terraform state rm google_storage_bucket.mlflow_bucket
+- $ terraform state rm google_compute_address.mlops_vm_static_ip

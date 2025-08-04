@@ -129,8 +129,8 @@ pytest
 requests-mock
 EOF
 
-echo "📦 Installing system packages: tmux and nano..."
-sudo apt update && sudo apt install -y tmux nano
+echo "📦 Installing system packages: tmux, nano, and net-tools (for netstat)..."
+sudo apt update && sudo apt install -y tmux nano net-tools
 
 echo "📦 Installing Python packages into '$ENV_NAME'..."
 conda activate "$ENV_NAME"
