@@ -131,7 +131,9 @@ Open the API activation link in your browser: Click enable wait for a few minute
 
 ---
 #### From your local machine
-$ export GOOGLE_APPLICATION_CREDENTIALS="/mnt/your/path/to the service-account-key-file.json/.gcp/ml-pipeline-orchestration-17.json"
+- $ git clone https://github.com/bonisadar/dhakacity-precipitation-forecast-mlops25
+
+- $ export GOOGLE_APPLICATION_CREDENTIALS="/mnt/your/path/to the service-account-key-file.json/.gcp/ml-pipeline-orchestration-17.json"
 
 ### DO NOT forget to change the bucket-name inside the terraform.tfvars
 
