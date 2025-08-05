@@ -23,7 +23,7 @@ deployments:
   version: test-2
   tags: [training-data-collection]
   description: null
-  schedule: 
+  schedule:
     cron: "0 22 1 * *"       # Every 1st day of the month at 22:00 (10 PM)
     timezone: "Asia/Dhaka"   # Your local timezone
 
@@ -40,7 +40,7 @@ deployments:
   version: test-2
   tags: []
   description: null
-  schedule: 
+  schedule:
     cron: "0 22 2 * *"       # Every 1st day of the month at 22:00 (10 PM)
     timezone: "Asia/Dhaka"   # Your local timezone
   flow_name: train_and_compare
@@ -49,7 +49,7 @@ deployments:
   work_pool:
     name: first_worker
     work_queue_name: defaultn
-    
+
     job_variables: {}
 
 - name: drift-monitoring-deployment-test
@@ -57,7 +57,7 @@ deployments:
   tags: ["monitoring"]
   schedule:
     cron: "0 17 * * *"         # 11 PM Dhaka is 5 PM UTC
-    timezone: "Asia/Dhaka"     
+    timezone: "Asia/Dhaka"
   flow_name: drift_monitoring_flow
   entrypoint: monitor_drift.py:drift_monitoring_flow
   work_pool:

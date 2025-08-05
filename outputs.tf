@@ -20,5 +20,3 @@ output "mlops_vm_sta_ip" {
 output "prefect_database_name" {
   value = google_sql_database.prefect_database.name
 }
-
-

@@ -27,4 +27,3 @@ docker compose up -d
 
 echo "=== Monitoring stack started successfully ==="
 docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Ports}}"
-

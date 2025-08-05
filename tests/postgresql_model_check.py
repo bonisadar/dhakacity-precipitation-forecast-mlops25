@@ -13,7 +13,7 @@ model_name = "model"  # this must match your registered model name exactly
 
 try:
     champion = client.get_model_version_by_alias(name=model_name, alias="champion")
-    print(f"\n🏆 Champion model:")
+    print("\n🏆 Champion model:")
     print(f"Model name: {champion.name}")
     print(f"Version: {champion.version}")
     print(f"Stage: {champion.current_stage}")

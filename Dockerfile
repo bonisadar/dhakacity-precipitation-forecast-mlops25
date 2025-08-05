@@ -10,4 +10,3 @@ EXPOSE 8080
 
 # Use uvicorn to bind to 0.0.0.0 and $PORT
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
-

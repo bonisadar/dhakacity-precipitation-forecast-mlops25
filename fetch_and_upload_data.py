@@ -1,16 +1,20 @@
 import os
-from datetime import datetime, timedelta
-from prefect import flow, task, get_run_logger
-from utils.config import get_bucket_name, get_sendgrid_block
-from data_fetcher import fetch_weather_data, get_dynamic_date_range
+from datetime import datetime
+
 from google.cloud import storage
+from prefect import flow, get_run_logger, task
 from prefect.blocks.notifications import SendgridEmail
+
+from data_fetcher import fetch_weather_data, get_dynamic_date_range
+from utils.config import get_bucket_name, get_sendgrid_block
+
 
 @task
 def save_to_local(df, file_path):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     df.to_csv(file_path, index=False)
     return file_path
+
 
 @task
 def upload_to_gcs(file_path, destination_blob_name, bucket_name):
@@ -32,11 +36,20 @@ def fetch_and_upload_flow():
 
     # Weather parameters
     hourly_vars = [
-        'temperature_2m', 'relative_humidity_2m', 'dewpoint_2m',
-        'apparent_temperature', 'cloudcover', 'cloudcover_low',
-        'windspeed_10m', 'winddirection_10m', 'surface_pressure',
-        'vapour_pressure_deficit', 'weathercode', 'wet_bulb_temperature_2m',
-        'precipitation', 'is_day'
+        "temperature_2m",
+        "relative_humidity_2m",
+        "dewpoint_2m",
+        "apparent_temperature",
+        "cloudcover",
+        "cloudcover_low",
+        "windspeed_10m",
+        "winddirection_10m",
+        "surface_pressure",
+        "vapour_pressure_deficit",
+        "weathercode",
+        "wet_bulb_temperature_2m",
+        "precipitation",
+        "is_day",
     ]
 
     # Dynamic date range (last 20 years)
@@ -50,7 +63,7 @@ def fetch_and_upload_flow():
     save_to_local(df, local_file)
 
     # Upload to GCS
-    upload_to_gcs(local_file, f'raw/raw_dhaka_weather.csv', bucket_name)
+    upload_to_gcs(local_file, "raw/raw_dhaka_weather.csv", bucket_name)
 
     flow_end_time = datetime.now()
 
@@ -59,7 +72,6 @@ def fetch_and_upload_flow():
     has_missing = missing_count > 0
 
     sendgrid_block = SendgridEmail.load(get_sendgrid_block())
-
 
     subject = "☁️ Training data collection via Open-meteo API"
     message = (
@@ -82,4 +94,3 @@ def fetch_and_upload_flow():
 
 if __name__ == "__main__":
     fetch_and_upload_flow()
-

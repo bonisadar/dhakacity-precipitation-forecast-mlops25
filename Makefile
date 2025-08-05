@@ -1,7 +1,7 @@
 # VARIABLES (edit these! Some them you will get after performing terraform)
 VM_IP=34.131.112.33
 PG_IP=34.27.125.126
-password1=123zxc
+password1=password
 PREFECT_DB_URL=postgresql+asyncpg://postgres:$(password1)@$(PG_IP):5432/prefectdb
 MLFLOW_DB_URL=postgresql+psycopg2://postgres:$(password1)@$(PG_IP):5432/mlflowdb
 GCS_BUCKET=mlops-zoomcamp-bucket-95
@@ -112,51 +112,6 @@ docker-init:
 	@./setup_monitoring.sh
 
 
-# =============================
-# 5. Prefect and Mlflow 
-# =============================
-
-help:
-	@echo "Available commands:"
-	@echo "  make setup_prefect_ui   - Prepares folders and permissions for Prefect UI"
-	@echo "  make start_prefect_api  - Starts Prefect API server in tmux"
-	@echo "  make start_mlflow       - Starts MLflow tracking server in tmux"
-	@echo "  make set_env_vars       - Export necessary env vars in current shell"
-	@echo "  make start-services     - Runs all"
-
-setup_prefect_ui:
-	sudo mkdir -p /home/bonisadar/miniconda3/envs/mlopsenv/lib/python3.10/site-packages/prefect/server/ui_build
-	sudo chown -R bonisadar:bonisadar /home/bonisadar/miniconda3/envs/mlopsenv/lib/python3.10/site-packages/prefect/server/ui_build
-
-start_prefect_api:
-	tmux new-session -d -s prefect_server '\
-	export GOOGLE_APPLICATION_CREDENTIALS=$(CREDENTIALS_PATH) && \
-	export PREFECT_API_DATABASE_CONNECTION_URL=$(PREFECT_DB_URL) && \
-	export PREFECT_API_URL=http://$(VM_IP):4200/api && \
-	prefect server start --host 0.0.0.0 --port 4200'
-
-start_mlflow:
-	tmux new-session -d -s mlflow_server '\
-	export GOOGLE_APPLICATION_CREDENTIALS=$(CREDENTIALS_PATH) && \
-	export MLFLOW_TRACKING_URI=http://$(VM_IP):5000 && \
-	mlflow server \
-	  --backend-store-uri=$(MLFLOW_DB_URL) \
-	  --default-artifact-root=gs://$(GCS_BUCKET)/mlflow-artifacts \
-	  --host 0.0.0.0 --port 5000'
-
-
-set_env_vars:
-	export PREFECT_API_DATABASE_CONNECTION_URL=$(PREFECT_DB_URL)
-	export PREFECT_API_URL=http://$(VM_IP):4200/api
-	export MLFLOW_TRACKING_URI=http://$(VM_IP):5000
-
-mlflow-ui:
-	@echo "Open http://$(VM_IP):5000 in your browser to access MLflow UI"
-
-prefect-ui:
-	@echo "Open http://$(VM_IP):4200 in your browser to access Prefect UI"
-
-start-services: setup_prefect_ui start_prefect_api start_mlflow check_ports set_env_vars mlflow-ui prefect-ui
 
 # ==============================
 # 6. Kill services
@@ -166,33 +121,3 @@ stop-services:
 	@tmux kill-session -t prefect_server || true
 	@tmux kill-session -t mlflow_server || true
 	@echo "All services stopped."
-
-
-# ==============================
-# 6. Credentials and Deployments
-# ==============================
-
-export_credentials:
-	export GOOGLE_APPLICATION_CREDENTIALS=$(CREDENTIALS_PATH)
-
-deploy_fetch_data:
-	prefect deploy fetch_and_upload_data.py:fetch_and_upload_flow -n open-meteo-data-fetcher -p "first_worker"
-
-run_fetch_data:
-	prefect deployment run 'fetch-and-upload-flow/open-meteo-data-fetcher'
-
-deploy_train:
-	prefect deploy train_and_compare.py:train_and_compare -n dhaka-precipitation-forecast-test -p "first_worker"
-
-run_train:
-	prefect deployment run 'train_and_compare/dhaka-precipitation-forecast-test'
-
-deploy_drift:
-	prefect deploy monitor_drift.py:drift_monitoring_flow -n drift-monitoring-deployment-test -p "first_worker"
-
-run_drift:
-	prefect deployment run 'drift_monitoring_flow/drift-monitoring-deployment-test'
-
-deploy_all: deploy_fetch_data deploy_train deploy_drift
-
-run_all: run_fetch_data run_train run_drift
