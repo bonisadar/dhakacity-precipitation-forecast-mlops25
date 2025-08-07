@@ -97,7 +97,7 @@ If need help. Click here [here](assets/gcp-setup-instructions.md). Follow them s
 * $ gcloud compute instances start mlops-vm --zone=asia-south2-a
 * $ gcloud compute ssh mlops-vm --zone=asia-south2-a
 
-#### During first loging into VM
+#### During first login into VM
 
 - $ source ~/miniconda3/etc/profile.d/conda.sh
 - $ conda activate mlopsenv
@@ -115,11 +115,13 @@ If need help. Click here [here](assets/gcp-setup-instructions.md). Follow them s
   - $ gcloud compute scp your-service-key.json bonisadar@mlops-vm:/home/bonisadar/ --zone=asia-south2-a
 
 - to upload the key file to the VM (Or just upload the file via upload button if you are using browser-based SSH to access the VM)
-  - $ make move-creds (Don't forget to update your Makefile variables as necessary)
 
 ### From inside your VM
 
-- Move to project directory $ cd projects/dhakacity-precipitation-forecast-mlops25
+- $ make move-creds (Don't forget to update your Makefile (Inside your VM) variables as necessary)
+
+- Move to project directory
+- $ cd projects/dhakacity-precipitation-forecast-mlops25
 - $ export GOOGLE_APPLICATION_CREDENTIALS="/home/bonisadar/projects/dhakacity-precipitation-forecast-mlops25/.gcp/your-service-key.json" <!-- pragma: allowlist secret -->
 
 ### Initializing pushgateway, prometheus and Grafana
